@@ -8,6 +8,7 @@ from infraestructure.persistence.django.user_repository import DjangoUserReposit
 
 from domain.entities.users import User
 
+
 class UserCreateAPIView(APIView):
     def post(self, request):
         serializer = CreateUserSerializer(data=request.data)

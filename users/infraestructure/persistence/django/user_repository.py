@@ -1,12 +1,12 @@
 from domain.entities.users import User
 from domain.ports.user_repository import UserRepository
-from .models import UserModel
+from users.models import UserModel
 
 
 class DjangoUserRepository(UserRepository):
     def create(self, user: User) -> User:
-        user_model = UserModel.objects.create(
-            name=user.name, email=user.email, password=user.password
+        user_model = UserModel.objects.create_user(
+            email=user.email, password=user.password, name=user.name
         )
         return self._to_domain(user_model)
 
