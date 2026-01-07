@@ -15,6 +15,13 @@ class CourseRepositoryDjango(CourseRepository):
         )
         return self._to_domain(course_model)
 
+    def get_by_id(self, id: int) -> Course | None:
+        try:
+            course_model = CourseModel.objects.get(id=id)
+            return self._to_domain(course_model)
+        except CourseModel.DoesNotExist:
+            return None
+
     def _to_domain(self, course_model: CourseModel) -> Course:
         return Course(
             id=course_model.id,

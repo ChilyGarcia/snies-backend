@@ -7,3 +7,6 @@ class CourseModel(models.Model):
     id_cine_field_detailed = models.CharField(max_length=6)
     is_extension = models.BooleanField()
     is_active = models.BooleanField()
+
+    class Meta:
+        db_table = "courses"

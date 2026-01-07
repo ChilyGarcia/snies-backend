@@ -1,0 +1,7 @@
+from abc import ABC, abstractmethod
+from continuing_education.domain.entities.continuing_education import ContinuingEducation
+
+class ContinuingEducationRepository(ABC):
+    @abstractmethod
+    def create(self, continuing_education: ContinuingEducation):
+        pass    

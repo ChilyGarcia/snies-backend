@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "users",
     "courses",
+    "continuing_education",
 ]
 
 MIDDLEWARE = [
@@ -145,6 +146,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "EXCEPTION_HANDLER": "common.presentation.exceptions.exception_handler.custom_exception_handler",
 }
 
 AUTH_USER_MODEL = "users.UserModel"
