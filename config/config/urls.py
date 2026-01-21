@@ -13,4 +13,8 @@ urlpatterns = [
         "api/wellbeing_activities/",
         include("wellbeing_activities.presentation.api.wellbeing_activities.urls"),
     ),
+    path(
+        "api/wellbeing_beneficiaries/",
+        include("wellbeing_beneficiaries.presentation.api.wellbeing_beneficiaries.urls"),
+    ),
 ]
