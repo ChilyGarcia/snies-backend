@@ -178,4 +178,4 @@ Para mantener la limpieza de la arquitectura, al crear una nueva aplicación Dja
 
 ---
 
-Desarrollado con ❤️ para máxima escalabilidad.
+

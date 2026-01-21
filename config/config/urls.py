@@ -9,4 +9,8 @@ urlpatterns = [
         "api/continuing_education/",
         include("continuing_education.presentation.api.continuing_education.urls"),
     ),
+    path(
+        "api/wellbeing_activities/",
+        include("wellbeing_activities.presentation.api.wellbeing_activities.urls"),
+    ),
 ]
