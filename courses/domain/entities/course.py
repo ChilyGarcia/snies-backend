@@ -13,11 +13,11 @@ class Course:
         self.is_extension = is_extension
         self.is_active = is_active
 
-        # self._validate_code()
-        # self._validate_name()
-        # self._validate_id_cine_field_detailed()
-        # self._validate_is_extension()
-        # self._validate_is_active()
+                               
+                               
+                                                 
+                                       
+                                    
 
     def _validate_code(self):
         if not self.code or len(self.code) != 6:

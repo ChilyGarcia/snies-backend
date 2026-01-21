@@ -10,4 +10,3 @@ class ContinuingEducationModel(models.Model):
 
     class Meta:
         db_table = "continuing_education"
-    

@@ -14,11 +14,11 @@ def test_register_login():
     client = APIClient()
     email = "newuser2@example.com"
 
-    # Clean up
+              
     if UserModel.objects.filter(email=email).exists():
         UserModel.objects.get(email=email).delete()
 
-    # 1. Register
+                 
     print("Testing Registration...")
     register_data = {"name": "New User 2", "email": email, "password": "securepassword"}
 
@@ -30,7 +30,7 @@ def test_register_login():
         print(f"Registration status: {response.status_code}")
         print(response.data)
 
-    # 2. Login
+              
     print("\nTesting Login...")
     login_data = {"email": email, "password": "securepassword"}
 

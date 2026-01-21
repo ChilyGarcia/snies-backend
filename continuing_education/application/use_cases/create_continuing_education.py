@@ -15,4 +15,3 @@ class CreateContinuingEducationUseCase:
             raise CourseNotFoundException("Course not found")
 
         return self.continuing_education_repository.create(continuing_education)
-    

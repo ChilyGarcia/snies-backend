@@ -93,6 +93,85 @@ python config/manage.py runserver
 
 El servidor estará disponible en `http://127.0.0.1:8000/`.
 
+## 🐳 Docker (Django + Postgres con Docker Compose)
+
+### Prerrequisitos
+
+- Docker Desktop (con `docker compose`)
+
+### Pasos
+
+1. (Opcional) Si quieres sobreescribir variables (ej: `SECRET_KEY`, puertos, credenciales), crea un archivo `env` basado en `env.example` (en este repo no se permite crear archivos que inicien con `.`):
+
+**PowerShell (Windows):**
+
+```powershell
+Copy-Item env.example env
+```
+
+**CMD (Windows):**
+
+```bash
+copy env.example env
+```
+
+**Linux/Mac:**
+
+```bash
+cp env.example env
+```
+
+2. Levanta todo (API + Postgres):
+
+```bash
+docker compose up --build
+```
+
+3. La API quedará disponible en `http://localhost:8000/`.
+
+## 🚀 Docker para Producción (Gunicorn + Nginx + Postgres)
+
+Esta variante usa:
+
+- Gunicorn (en vez de `runserver`)
+- Nginx como reverse proxy y para servir `/static/`
+- Sin montar el código con `volumes` (imagen inmutable)
+
+### Variables requeridas
+
+Crea un archivo `env.prod` basado en `env.prod.example` y ajusta:
+
+- `SECRET_KEY`
+- `ALLOWED_HOSTS` (dominio/s)
+- `DB_PASSWORD`
+- `CSRF_TRUSTED_ORIGINS` si usas HTTPS
+
+**PowerShell (Windows):**
+
+```powershell
+Copy-Item env.prod.example env.prod
+```
+
+### Levantar en producción
+
+```bash
+docker compose --env-file env.prod -f docker-compose.prod.yml up --build -d
+```
+
+La app quedará detrás de Nginx en `http://localhost` (o el puerto `NGINX_PORT_EXPOSE`).
+
+### Parar y limpiar
+
+```bash
+docker compose down
+```
+
+Si quieres borrar también los datos persistidos de Postgres:
+
+```bash
+docker compose down -v
+```
+
 ## 📦 Agregar un Nuevo Módulo
 
 Para mantener la limpieza de la arquitectura, al crear una nueva aplicación Django (`python manage.py startapp nombre`), reestructura inmediatamente sus carpetas para seguir el patrón: `domain`, `application`, `infraestructure`, `presentation`.

@@ -24,4 +24,3 @@ class CourseCreateAPIView(APIView):
         created_course = use_case.execute(course)
         return Response({"id": created_course.id, "message": "Course created successfully"}, status=status.HTTP_201_CREATED)
 
-  
