@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "corsheaders",
     "users",
     "courses",
     "continuing_education",
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -159,6 +161,8 @@ REST_FRAMEWORK = {
     ),
     "EXCEPTION_HANDLER": "common.presentation.exceptions.exception_handler.custom_exception_handler",
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "users.UserModel"
 
