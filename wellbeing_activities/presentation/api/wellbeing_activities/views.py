@@ -25,10 +25,13 @@ from wellbeing_activities.infraestructure.persistence.django.wellbeing_activity_
 from wellbeing_activities.presentation.api.wellbeing_activities.serializers import (
     WellbeingActivitySerializer,
 )
+from users.presentation.permissions import HasModulePermission
 
 
 class WellbeingActivityCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "wellbeing"
+    required_action = "create"
 
     def post(self, request):
         serializer = WellbeingActivitySerializer(data=request.data)
@@ -68,7 +71,9 @@ class WellbeingActivityCreateAPIView(APIView):
 
 
 class WellbeingActivityListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "wellbeing"
+    required_action = "view"
 
     def get(self, request):
         use_case = ListWellbeingActivitiesUseCase(
@@ -98,7 +103,9 @@ class WellbeingActivityListAPIView(APIView):
 
 
 class WellbeingActivityDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "wellbeing"
+    required_action = "view"
 
     def get(self, request, id: int):
         use_case = GetWellbeingActivityUseCase(
@@ -131,6 +138,7 @@ class WellbeingActivityDetailAPIView(APIView):
         )
 
     def put(self, request, id: int):
+        self.required_action = "edit"
         serializer = WellbeingActivitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -172,6 +180,7 @@ class WellbeingActivityDetailAPIView(APIView):
         )
 
     def delete(self, request, id: int):
+        self.required_action = "delete"
         use_case = DeleteWellbeingActivityUseCase(
             repository=WellbeingActivityRepositoryDjango()
         )

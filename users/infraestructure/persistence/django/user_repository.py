@@ -42,10 +42,26 @@ class DjangoUserRepository(UserRepository):
         except UserModel.DoesNotExist:
             pass
 
+    def list_paginated(self, page: int, page_size: int) -> tuple[int, list[User]]:
+        if page < 1:
+            page = 1
+        if page_size < 1:
+            page_size = 10
+        if page_size > 100:
+            page_size = 100
+
+        qs = UserModel.objects.select_related("role").all().order_by("id")
+        total = qs.count()
+        offset = (page - 1) * page_size
+        items = qs[offset : offset + page_size]
+        return total, [self._to_domain(u) for u in items]
+
     def _to_domain(self, user_model: UserModel) -> User:
         return User(
             id=user_model.id,
             name=user_model.name,
             email=user_model.email,
             password=user_model.password,
+            role_id=getattr(user_model, "role_id", None),
+            role_name=getattr(getattr(user_model, "role", None), "name", None),
         )

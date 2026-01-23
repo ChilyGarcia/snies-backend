@@ -6,12 +6,17 @@ from courses.domain.entities.course import Course
 from courses.application.use_cases.create_course import CreateCourseUseCase
 from courses.infraestructure.persistence.django.course_repository import CourseRepositoryDjango
 from rest_framework.permissions import IsAuthenticated
+from users.presentation.permissions import HasModulePermission
 
 class CourseCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "courses"
+    required_action = "create"
     def post(self, request):
         serializer = CourseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        use_case = CreateCourseUseCase(course_repository=CourseRepositoryDjango())
 
         course = Course(
             id=None,

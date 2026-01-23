@@ -27,10 +27,13 @@ from wellbeing_beneficiaries.infraestructure.persistence.django.wellbeing_benefi
 from wellbeing_beneficiaries.presentation.api.wellbeing_beneficiaries.serializers import (
     WellbeingBeneficiaryActivitySerializer,
 )
+from users.presentation.permissions import HasModulePermission
 
 
 class WellbeingBeneficiaryActivityCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "wellbeing"
+    required_action = "create"
 
     def post(self, request):
         serializer = WellbeingBeneficiaryActivitySerializer(data=request.data)
@@ -60,7 +63,9 @@ class WellbeingBeneficiaryActivityCreateAPIView(APIView):
 
 
 class WellbeingBeneficiaryActivityListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "wellbeing"
+    required_action = "view"
 
     def get(self, request):
         use_case = ListWellbeingBeneficiaryActivitiesUseCase(
@@ -83,7 +88,9 @@ class WellbeingBeneficiaryActivityListAPIView(APIView):
 
 
 class WellbeingBeneficiaryActivityDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "wellbeing"
+    required_action = "view"
 
     def get(self, request, id: int):
         use_case = GetWellbeingBeneficiaryActivityUseCase(
@@ -109,6 +116,7 @@ class WellbeingBeneficiaryActivityDetailAPIView(APIView):
         )
 
     def put(self, request, id: int):
+        self.required_action = "edit"
         serializer = WellbeingBeneficiaryActivitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -140,6 +148,7 @@ class WellbeingBeneficiaryActivityDetailAPIView(APIView):
         )
 
     def delete(self, request, id: int):
+        self.required_action = "delete"
         use_case = DeleteWellbeingBeneficiaryActivityUseCase(
             repository=WellbeingBeneficiaryActivityRepositoryDjango()
         )

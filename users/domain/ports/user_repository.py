@@ -22,3 +22,8 @@ class UserRepository(ABC):
     @abstractmethod
     def delete(self, user_id: int) -> None:
         pass
+
+    @abstractmethod
+    def list_paginated(self, page: int, page_size: int) -> tuple[int, list[User]]:
+        """Returns (total_count, users_page)."""
+        pass
