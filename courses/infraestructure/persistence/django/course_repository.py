@@ -22,6 +22,10 @@ class CourseRepositoryDjango(CourseRepository):
         except CourseModel.DoesNotExist:
             return None
 
+    def list(self) -> list[Course]:
+        qs = CourseModel.objects.all().order_by("id")
+        return [self._to_domain(c) for c in qs]
+
     def _to_domain(self, course_model: CourseModel) -> Course:
         return Course(
             id=course_model.id,

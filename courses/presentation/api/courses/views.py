@@ -4,9 +4,31 @@ from rest_framework import status
 from courses.presentation.api.courses.serializers import CourseSerializer
 from courses.domain.entities.course import Course
 from courses.application.use_cases.create_course import CreateCourseUseCase
+from courses.application.use_cases.list_courses import ListCoursesUseCase
 from courses.infraestructure.persistence.django.course_repository import CourseRepositoryDjango
 from rest_framework.permissions import IsAuthenticated
 from users.presentation.permissions import HasModulePermission
+
+class CourseListAPIView(APIView):
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    required_module = "courses"
+    required_action = "view"
+
+    def get(self, request):
+        use_case = ListCoursesUseCase(course_repository=CourseRepositoryDjango())
+        courses = use_case.execute()
+        data = [
+            {
+                "id": c.id,
+                "code": c.code,
+                "name": c.name,
+                "id_cine_field_detailed": c.id_cine_field_detailed,
+                "is_extension": c.is_extension,
+                "is_active": c.is_active,
+            }
+            for c in courses
+        ]
+        return Response(data, status=status.HTTP_200_OK)
 
 class CourseCreateAPIView(APIView):
     permission_classes = [IsAuthenticated, HasModulePermission]

@@ -13,6 +13,16 @@ class ContinuingEducationRepositoryDjango(ContinuingEducationRepository):
         )
         return self._to_domain(continuing_education_model)
 
+    def list(
+        self, year: str | None = None, semester: int | None = None
+    ) -> list[ContinuingEducation]:
+        qs = ContinuingEducationModel.objects.all().order_by("id")
+        if year:
+            qs = qs.filter(year=str(year))
+        if semester is not None:
+            qs = qs.filter(semester=int(semester))
+        return [self._to_domain(m) for m in qs]
+
     def _to_domain(self, continuing_education_model: ContinuingEducationModel) -> ContinuingEducation:
         return ContinuingEducation(
             id=continuing_education_model.id,

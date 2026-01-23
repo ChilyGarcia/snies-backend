@@ -55,8 +55,11 @@ INSTALLED_APPS = [
     "users",
     "courses",
     "continuing_education",
+    "continuing_education_teachers",
+    "continuing_education_beneficiaries",
     "wellbeing_activities",
     "wellbeing_beneficiaries",
+    "wellbeing_human_resources",
 ]
 
 MIDDLEWARE = [

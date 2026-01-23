@@ -10,3 +10,7 @@ class CourseRepository(ABC):
     @abstractmethod
     def get_by_id(self, id: int) -> Course:
         pass
+
+    @abstractmethod
+    def list(self) -> list[Course]:
+        pass

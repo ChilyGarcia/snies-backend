@@ -18,7 +18,7 @@ def seed_root_role_and_user(apps, schema_editor):
     )
 
     # 2) Ensure root has full permissions for all known modules
-    for module in ("courses", "wellbeing"):
+    for module in ("courses", "wellbeing", "continuing_education"):
         RolePermissionModel.objects.update_or_create(
             role=root_role,
             module=module,
