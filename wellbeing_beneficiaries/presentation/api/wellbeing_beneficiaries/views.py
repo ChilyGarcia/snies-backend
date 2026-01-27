@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.views import APIView
+from audit.presentation.audited_api_view import AuditedAPIView
 
 from wellbeing_beneficiaries.application.use_cases.create_wellbeing_beneficiary_activity import (
     CreateWellbeingBeneficiaryActivityUseCase,
@@ -30,7 +30,7 @@ from wellbeing_beneficiaries.presentation.api.wellbeing_beneficiaries.serializer
 from users.presentation.permissions import HasModulePermission
 
 
-class WellbeingBeneficiaryActivityCreateAPIView(APIView):
+class WellbeingBeneficiaryActivityCreateAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "wellbeing"
     required_action = "create"
@@ -62,7 +62,7 @@ class WellbeingBeneficiaryActivityCreateAPIView(APIView):
         )
 
 
-class WellbeingBeneficiaryActivityListAPIView(APIView):
+class WellbeingBeneficiaryActivityListAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "wellbeing"
     required_action = "view"
@@ -87,7 +87,7 @@ class WellbeingBeneficiaryActivityListAPIView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class WellbeingBeneficiaryActivityDetailAPIView(APIView):
+class WellbeingBeneficiaryActivityDetailAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "wellbeing"
     required_action = "view"

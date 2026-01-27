@@ -1,4 +1,4 @@
-from rest_framework.views import APIView
+from audit.presentation.audited_api_view import AuditedAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +16,7 @@ from users.infraestructure.persistence.django.user_repository import DjangoUserR
 from users.domain.entities.users import User
 
 
-class UserCreateAPIView(APIView):
+class UserCreateAPIView(AuditedAPIView):
     def post(self, request):
         serializer = CreateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -36,7 +36,7 @@ class UserCreateAPIView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserMeAPIView(APIView):
+class UserMeAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -54,7 +54,7 @@ class UserMeAPIView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserMePermissionsAPIView(APIView):
+class UserMePermissionsAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -96,7 +96,7 @@ class UserMePermissionsAPIView(APIView):
         )
 
 
-class UserListAPIView(APIView):
+class UserListAPIView(AuditedAPIView):
     """
     Root-only paginated listing of users.
     GET /api/users/?page=1&page_size=20

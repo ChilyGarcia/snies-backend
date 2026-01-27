@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "audit",
+    "notifications",
     "users",
     "courses",
     "continuing_education",

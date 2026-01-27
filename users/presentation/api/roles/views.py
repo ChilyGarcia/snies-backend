@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.views import APIView
+from audit.presentation.audited_api_view import AuditedAPIView
 from users.presentation.permissions import IsRootUser
 
 from users.application.use_cases.assign_role_to_user import AssignRoleToUserUseCase
@@ -12,6 +12,12 @@ from users.domain.entities.role import Role
 from users.domain.entities.role_permission import RolePermission
 from users.infraestructure.persistence.django.role_repository import DjangoRoleRepository
 from users.infraestructure.persistence.django.user_role_repository import DjangoUserRoleRepository
+from users.models import UserModel
+from notifications.application.use_cases.create_notification import CreateNotificationUseCase
+from notifications.domain.entities.notification import Notification
+from notifications.infraestructure.persistence.django.notification_repository import (
+    DjangoNotificationRepository,
+)
 from users.presentation.api.roles.serializers import (
     AssignRoleSerializer,
     CreateRoleSerializer,
@@ -19,7 +25,7 @@ from users.presentation.api.roles.serializers import (
 )
 
 
-class RootOnlyAPIView(APIView):
+class RootOnlyAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, IsRootUser]
 
 
@@ -83,6 +89,27 @@ class RolePermissionsAPIView(RootOnlyAPIView):
 
         use_case = SetRolePermissionsUseCase(role_repository=DjangoRoleRepository())
         use_case.execute(role_id=role_id, permissions=permissions)
+
+        # Notify users with this role that their permissions changed
+        affected_users = UserModel.objects.filter(role_id=role_id).values_list("id", flat=True)
+        notifier = CreateNotificationUseCase(notification_repository=DjangoNotificationRepository())
+        for uid in affected_users:
+            notifier.execute(
+                Notification(
+                    id=None,
+                    user_id=int(uid),
+                    created_at=None,
+                    read_at=None,
+                    is_read=False,
+                    title="Permisos actualizados",
+                    message="Tus permisos fueron actualizados por un administrador.",
+                    module="roles",
+                    action="permissions_updated",
+                    resource_id=str(role_id),
+                    level="info",
+                )
+            )
+
         return Response({"message": "Permissions updated successfully"}, status=status.HTTP_200_OK)
 
 
@@ -93,5 +120,23 @@ class AssignUserRoleAPIView(RootOnlyAPIView):
 
         use_case = AssignRoleToUserUseCase(user_role_repository=DjangoUserRoleRepository())
         use_case.execute(user_id=user_id, role_id=serializer.validated_data["role_id"])
+
+        notifier = CreateNotificationUseCase(notification_repository=DjangoNotificationRepository())
+        notifier.execute(
+            Notification(
+                id=None,
+                user_id=user_id,
+                created_at=None,
+                read_at=None,
+                is_read=False,
+                title="Rol asignado",
+                message="Se te asignó un nuevo rol. Tus permisos pueden haber cambiado.",
+                module="roles",
+                action="role_assigned",
+                resource_id=str(serializer.validated_data["role_id"]),
+                level="info",
+            )
+        )
+
         return Response({"message": "Role assigned successfully"}, status=status.HTTP_200_OK)
 

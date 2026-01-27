@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.views import APIView
+from audit.presentation.audited_api_view import AuditedAPIView
 
 from continuing_education_teachers.application.use_cases.create_continuing_education_teacher import (
     CreateContinuingEducationTeacherUseCase,
@@ -30,7 +30,7 @@ from continuing_education_teachers.presentation.api.continuing_education_teacher
 from users.presentation.permissions import HasModulePermission
 
 
-class ContinuingEducationTeacherCreateAPIView(APIView):
+class ContinuingEducationTeacherCreateAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "continuing_education"
     required_action = "create"
@@ -57,7 +57,7 @@ class ContinuingEducationTeacherCreateAPIView(APIView):
         )
 
 
-class ContinuingEducationTeacherListAPIView(APIView):
+class ContinuingEducationTeacherListAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "continuing_education"
     required_action = "view"
@@ -90,7 +90,7 @@ class ContinuingEducationTeacherListAPIView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class ContinuingEducationTeacherDetailAPIView(APIView):
+class ContinuingEducationTeacherDetailAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "continuing_education"
     required_action = "view"

@@ -1,4 +1,4 @@
-from rest_framework.views import APIView
+from audit.presentation.audited_api_view import AuditedAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -11,7 +11,7 @@ from courses.infraestructure.persistence.django.course_repository import CourseR
 from continuing_education.domain.exceptions.domain_exception import DomainException
 from users.presentation.permissions import HasModulePermission
 
-class ContinuingEducationCreateAPIView(APIView):
+class ContinuingEducationCreateAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "continuing_education"
     required_action = "create"
@@ -32,7 +32,7 @@ class ContinuingEducationCreateAPIView(APIView):
         return Response({"id": created_continuing_education.id, "message": "Continuing education created successfully"}, status=status.HTTP_201_CREATED)
 
 
-class ContinuingEducationListAPIView(APIView):
+class ContinuingEducationListAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "continuing_education"
     required_action = "view"

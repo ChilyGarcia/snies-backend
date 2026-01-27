@@ -16,11 +16,13 @@ class RolePermissionModel(models.Model):
     MODULE_COURSES = "courses"
     MODULE_WELLBEING = "wellbeing"
     MODULE_CONTINUING_EDUCATION = "continuing_education"
+    MODULE_AUDIT = "audit"
 
     MODULE_CHOICES = [
         (MODULE_COURSES, "Cursos"),
         (MODULE_WELLBEING, "Bienestar"),
         (MODULE_CONTINUING_EDUCATION, "Educación continua"),
+        (MODULE_AUDIT, "Auditoría"),
     ]
 
     role = models.ForeignKey(RoleModel, on_delete=models.CASCADE, related_name="permissions")

@@ -1,4 +1,4 @@
-from rest_framework.views import APIView
+from audit.presentation.audited_api_view import AuditedAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from courses.presentation.api.courses.serializers import CourseSerializer
@@ -9,7 +9,7 @@ from courses.infraestructure.persistence.django.course_repository import CourseR
 from rest_framework.permissions import IsAuthenticated
 from users.presentation.permissions import HasModulePermission
 
-class CourseListAPIView(APIView):
+class CourseListAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "courses"
     required_action = "view"
@@ -30,7 +30,7 @@ class CourseListAPIView(APIView):
         ]
         return Response(data, status=status.HTTP_200_OK)
 
-class CourseCreateAPIView(APIView):
+class CourseCreateAPIView(AuditedAPIView):
     permission_classes = [IsAuthenticated, HasModulePermission]
     required_module = "courses"
     required_action = "create"
