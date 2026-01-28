@@ -8,6 +8,11 @@ from rest_framework.views import APIView
 from audit.application.use_cases.create_audit_log import CreateAuditLogUseCase
 from audit.domain.entities.audit_log import AuditLog
 from audit.infraestructure.persistence.django.audit_repository import DjangoAuditRepository
+from notifications.application.use_cases.create_notification import CreateNotificationUseCase
+from notifications.domain.entities.notification import Notification
+from notifications.infraestructure.persistence.django.notification_repository import (
+    DjangoNotificationRepository,
+)
 
 
 SENSITIVE_KEYS = {"password", "access", "refresh", "token"}
@@ -38,11 +43,93 @@ def _jsonable(obj: Any) -> Any:
 
 class AuditedAPIView(APIView):
     """
-    Logs all mutating requests (POST/PUT/PATCH/DELETE) under /api/ after DRF auth is applied.
+    Logs all mutating requests (POST/PUT/PATCH/DELETE) under /api/ after DRF auth
+    is applied.
     Skips /api/auth/ to avoid storing tokens/passwords.
     """
 
     audit_enabled = True
+    notifications_enabled = True
+
+    def _build_self_notification(
+        self, module_root: str | None, action: str, request_data: Any
+    ):
+        if not module_root:
+            return None
+
+        # Only "business" modules; skip meta/internal modules
+        if module_root in ("auth", "audit", "notifications"):
+            return None
+
+        # Only notify for create/update/delete
+        if action not in ("create", "update", "delete"):
+            return None
+
+        name = None
+        if isinstance(request_data, dict):
+            name = request_data.get("name") or request_data.get(
+                "activity_description"
+            )
+
+        # Titles/messages tuned for UI usefulness
+        if module_root == "courses":
+            if action == "create":
+                title = "Nuevo curso creado"
+                suffix = f": {name}" if name else ""
+                message = f"Has creado un nuevo curso{suffix}."
+            elif action == "update":
+                title = "Curso actualizado"
+                suffix = f": {name}" if name else ""
+                message = f"Has actualizado un curso{suffix}."
+            else:
+                title = "Curso eliminado"
+                message = "Has eliminado un curso."
+        elif module_root.startswith("wellbeing"):
+            if module_root == "wellbeing_activities":
+                subject = "actividad de bienestar"
+            elif module_root == "wellbeing_beneficiaries":
+                subject = "beneficiarios de bienestar"
+            else:
+                subject = "recursos humanos de bienestar"
+
+            if action == "create":
+                title = "Registro creado"
+                message = f"Has creado un registro de {subject}."
+            elif action == "update":
+                title = "Registro actualizado"
+                message = f"Has actualizado un registro de {subject}."
+            else:
+                title = "Registro eliminado"
+                message = f"Has eliminado un registro de {subject}."
+        elif module_root.startswith("continuing_education"):
+            if module_root == "continuing_education":
+                subject = "educación continua"
+            elif module_root == "continuing_education_teachers":
+                subject = "docentes de educación continua"
+            else:
+                subject = "beneficiarios de educación continua"
+
+            if action == "create":
+                title = "Registro creado"
+                message = f"Has creado un registro de {subject}."
+            elif action == "update":
+                title = "Registro actualizado"
+                message = f"Has actualizado un registro de {subject}."
+            else:
+                title = "Registro eliminado"
+                message = f"Has eliminado un registro de {subject}."
+        else:
+            if action == "create":
+                title = "Registro creado"
+                message = "Has creado un nuevo registro."
+            elif action == "update":
+                title = "Registro actualizado"
+                message = "Has actualizado un registro."
+            else:
+                title = "Registro eliminado"
+                message = "Has eliminado un registro."
+
+        return {"title": title, "message": message, "level": "success"}
 
     def finalize_response(self, request, response, *args, **kwargs):
         response = super().finalize_response(request, response, *args, **kwargs)
@@ -57,6 +144,10 @@ class AuditedAPIView(APIView):
             if not path.startswith("/api/"):
                 return response
             if path.startswith("/api/auth/"):
+                return response
+            if path.startswith("/api/notifications/"):
+                return response
+            if path.startswith("/api/audit/"):
                 return response
             if method not in ("POST", "PUT", "PATCH", "DELETE"):
                 return response
@@ -89,14 +180,19 @@ class AuditedAPIView(APIView):
                     resource_id = str(kwargs[key])
                     break
             if resource_id is None:
-                rid = getattr(getattr(response, "data", None), "get", lambda _k, _d=None: None)("id", None)
+                rid = getattr(
+                    getattr(response, "data", None),
+                    "get",
+                    lambda _k, _d=None: None,
+                )("id", None)
                 if rid is not None:
                     resource_id = str(rid)
 
             user = getattr(request, "user", None)
-            user_id = getattr(user, "id", None) if getattr(user, "is_authenticated", False) else None
-            user_email = getattr(user, "email", None) if getattr(user, "is_authenticated", False) else None
-            role = getattr(user, "role", None) if getattr(user, "is_authenticated", False) else None
+            is_auth = bool(getattr(user, "is_authenticated", False))
+            user_id = getattr(user, "id", None) if is_auth else None
+            user_email = getattr(user, "email", None) if is_auth else None
+            role = getattr(user, "role", None) if is_auth else None
             user_role = getattr(role, "name", None) if role else None
 
             # request/response payloads (sanitized)
@@ -133,13 +229,45 @@ class AuditedAPIView(APIView):
                     view_name=view_name,
                     module=module,
                     resource_id=resource_id,
-                    request_data=request_data if isinstance(request_data, dict) else None,
-                    response_data=response_data if isinstance(response_data, dict) else None,
+                    request_data=(
+                        request_data if isinstance(request_data, dict) else None
+                    ),
+                    response_data=(
+                        response_data if isinstance(response_data, dict) else None
+                    ),
                 )
             )
+
+            # Self-notification (only on success)
+            if (
+                getattr(self, "notifications_enabled", True)
+                and getattr(user, "is_authenticated", False)
+                and 200 <= int(getattr(response, "status_code", 0) or 0) < 400
+                and user_id is not None
+            ):
+                notif_payload = self._build_self_notification(
+                    module_root, action, request_data
+                )
+                if notif_payload:
+                    CreateNotificationUseCase(
+                        notification_repository=DjangoNotificationRepository()
+                    ).execute(
+                        Notification(
+                            id=None,
+                            user_id=int(user_id),
+                            created_at=None,
+                            read_at=None,
+                            is_read=False,
+                            title=notif_payload["title"],
+                            message=notif_payload["message"],
+                            module=module,
+                            action=action,
+                            resource_id=resource_id,
+                            level=notif_payload.get("level"),
+                        )
+                    )
         except Exception:
             # Never break the API because of audit logging
             pass
 
         return response
-
